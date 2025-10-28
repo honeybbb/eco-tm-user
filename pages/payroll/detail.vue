@@ -222,16 +222,16 @@ export default {
           month,
           payDate: `${month}-25`,
           earnings: [
-            { name: '기본급', amount: 2_100_000 },
-            { name: '연장수당', amount: 240_000 },
-            { name: '야간수당', amount: 120_000 },
-            { name: '식대', amount: 100_000 },
+            { name: '기본급', amount: 2100000 },
+            { name: '연장수당', amount: 240000 },
+            { name: '야간수당', amount: 120000 },
+            { name: '식대', amount: 100000 },
           ],
           deductions: [
-            { name: '국민연금', amount: 94_500 },
-            { name: '건강보험', amount: 73_000 },
-            { name: '고용보험', amount: 19_000 },
-            { name: '소득세', amount: 65_000 },
+            { name: '국민연금', amount: 94500 },
+            { name: '건강보험', amount: 73000 },
+            { name: '고용보험', amount: 19000 },
+            { name: '소득세', amount: 65000 },
           ],
           note: '결근 없음 / 연장 12h, 야간 6h 반영.'
         }
