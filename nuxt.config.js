@@ -18,7 +18,9 @@ export default {
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
     ]
   },
-
+  server: {
+    port: 3006 // 기본값은 3000
+  },
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
     '~/assets/common.css'
