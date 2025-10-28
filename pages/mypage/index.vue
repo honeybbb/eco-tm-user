@@ -9,7 +9,7 @@
             </div>
             <v-spacer/>
             <v-btn color="primary" outlined @click="goEdit">
-              <v-icon left>mdi-pencil</v-icon>수정
+              <v-icon left to="/mypage/edit">mdi-pencil</v-icon>수정
             </v-btn>
           </v-card-title>
 

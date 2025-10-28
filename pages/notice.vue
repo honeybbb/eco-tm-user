@@ -1,125 +1,130 @@
 <!-- src/views/NoticeBoard.vue -->
 <template>
-  <v-container fluid class="pa-0">
-    <v-card class="elevation-2">
-      <!-- 헤더 -->
-      <v-card-title class="justify-space-between">
-        <div>
-          <div class="title font-weight-bold">공지사항</div>
-          <div class="caption grey--text">중요/일반 공지, 카테고리 및 기간으로 빠르게 탐색</div>
-        </div>
-      </v-card-title>
+  <v-container fluid class="pa-0 mobile-wrap">
+    <v-card class="mx-4 mt-4 rounded-xl elevation-1 summary-card">
+          <!-- 헤더 -->
+          <v-card-title class="py-4">
+            <div>
+              <div class="title font-weight-bold">공지사항</div>
+              <div class="caption grey--text">중요/일반 공지, 카테고리 및 기간으로 빠르게 탐색</div>
+            </div>
+          </v-card-title>
 
-      <!-- 필터 바 -->
-      <v-card-text class="pt-0">
-        <v-row dense>
-          <v-col cols="12" md="4">
-            <v-text-field
-              v-model="filters.q"
-              label="검색 (제목/본문/작성자)"
-              prepend-inner-icon="mdi-magnify"
-              outlined dense clearable
-            />
-          </v-col>
-          <v-col cols="6" md="3">
-            <v-select
-              v-model="filters.category"
-              :items="categoryItems"
-              label="카테고리"
-              outlined dense clearable
-              prepend-inner-icon="mdi-shape"
-            />
-          </v-col>
-          <v-col cols="6" md="3">
-            <v-select
-              v-model="filters.importance"
-              :items="importanceItems"
-              label="중요도"
-              outlined dense clearable
-              prepend-inner-icon="mdi-flag"
-            />
-          </v-col>
-          <v-col cols="12" md="2" class="d-flex align-center">
-            <v-menu v-model="menu" offset-y :close-on-content-click="false">
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn v-bind="attrs" v-on="on" outlined class="mr-2">
-                  <v-icon left small>mdi-calendar-range</v-icon>
-                  기간
-                </v-btn>
-              </template>
-              <v-card>
-                <v-date-picker v-model="dateRange" range color="primary" scrollable></v-date-picker>
-                <v-card-actions>
-                  <v-spacer/>
-                  <v-btn text @click="dateRange=null">해제</v-btn>
-                  <v-btn color="primary" text @click="menu=false">적용</v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-menu>
-            <v-btn text @click="resetFilters">필터 초기화</v-btn>
-          </v-col>
-        </v-row>
-      </v-card-text>
+          <!-- 필터 바 -->
+          <v-card-text class="pt-0">
+            <v-row dense>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="filters.q"
+                  label="검색 (제목/본문/작성자)"
+                  prepend-inner-icon="mdi-magnify"
+                  outlined dense clearable
+                />
+              </v-col>
+              <!--v-col cols="6" md="3">
+                <v-select
+                  v-model="filters.category"
+                  :items="categoryItems"
+                  label="카테고리"
+                  outlined dense clearable
+                  prepend-inner-icon="mdi-shape"
+                />
+              </v-col>
+              <v-col cols="6" md="3">
+                <v-select
+                  v-model="filters.importance"
+                  :items="importanceItems"
+                  label="중요도"
+                  outlined dense clearable
+                  prepend-inner-icon="mdi-flag"
+                />
+              </v-col>
+              <v-col cols="12" md="2" class="d-flex align-center">
+                <v-menu v-model="menu" offset-y :close-on-content-click="false">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn v-bind="attrs" v-on="on" outlined class="mr-2">
+                      <v-icon left small>mdi-calendar-range</v-icon>
+                      기간
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-date-picker v-model="dateRange" range color="primary" scrollable></v-date-picker>
+                    <v-card-actions>
+                      <v-spacer/>
+                      <v-btn text @click="dateRange=null">해제</v-btn>
+                      <v-btn color="primary" text @click="menu=false">적용</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-menu>
+                <v-btn text @click="resetFilters">필터 초기화</v-btn>
+              </v-col-->
+            </v-row>
+          </v-card-text>
 
-      <!-- 목록 -->
-      <table id="notifyTable">
-        <thead>
-        <tr>
-          <th v-for="item in headers">{{item.text}}</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="data in filteredNotices">
-          <td>{{data.id}}</td>
-          <td>{{data.title}}</td>
-          <td>{{data.author}}</td>
-        </tr>
-        </tbody>
-      </table>
-      <v-data-table
-        :headers="headers"
-        :items="filteredNotices"
-        :search="filters.q"
-        :items-per-page="pagination.itemsPerPage"
-        :page.sync="pagination.page"
-        item-key="id"
-        class="notice-table"
-        dense
-        @click:row="openDetail"
-      >
-        <template v-slot:item.pinned="{ item }">
-          <v-icon v-if="item.pinned" color="amber darken-2" title="상단고정">mdi-pin</v-icon>
-        </template>
+          <v-card-text>
+          <!-- 목록 -->
+          <table id="notiTable">
+            <thead>
+            <tr>
+              <th v-for="item in headers">{{item.text}}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="data in filteredNotices">
+              <td>{{data.id}}</td>
+              <td>{{data.title}}</td>
+              <td>{{data.author}}</td>
+            </tr>
+            <tr v-for="data in filteredNotices">
+              <td colspan="3"><div v-html="data.body"></div></td>
+            </tr>
+            </tbody>
+          </table>
+          </v-card-text>
+          <!--v-data-table
+            :headers="headers"
+            :items="filteredNotices"
+            :search="filters.q"
+            :items-per-page="pagination.itemsPerPage"
+            :page.sync="pagination.page"
+            item-key="id"
+            class="notice-table"
+            dense
+            @click:row="openDetail"
+          >
+            <template v-slot:item.pinned="{ item }">
+              <v-icon v-if="item.pinned" color="amber darken-2" title="상단고정">mdi-pin</v-icon>
+            </template>
 
-        <template v-slot:item.title="{ item }">
-          <div class="d-flex align-center">
-            <v-chip x-small v-if="item.importance==='중요'" color="red" text-color="white" label class="mr-2">중요</v-chip>
-            <span class="text-truncate" style="max-width: 520px">{{ item.title }}</span>
-            <v-chip x-small class="ml-2" v-if="item.category" label outlined>{{ item.category }}</v-chip>
-            <v-chip x-small class="ml-2" v-if="item.attachments && item.attachments.length" label>
-              <v-icon left x-small>mdi-paperclip</v-icon>{{ item.attachments.length }}
-            </v-chip>
-          </div>
-        </template>
+            <template v-slot:item.title="{ item }">
+              <div class="d-flex align-center">
+                <v-chip x-small v-if="item.importance==='중요'" color="red" text-color="white" label class="mr-2">중요</v-chip>
+                <span class="text-truncate" style="max-width: 520px">{{ item.title }}</span>
+                <v-chip x-small class="ml-2" v-if="item.category" label outlined>{{ item.category }}</v-chip>
+                <v-chip x-small class="ml-2" v-if="item.attachments && item.attachments.length" label>
+                  <v-icon left x-small>mdi-paperclip</v-icon>{{ item.attachments.length }}
+                </v-chip>
+              </div>
+            </template>
 
-        <template v-slot:item.createdAt="{ item }">
-          {{ formatDate(item.createdAt) }}
-        </template>
+            <template v-slot:item.createdAt="{ item }">
+              {{ formatDate(item.createdAt) }}
+            </template>
 
-        <template v-slot:item.status="{ item }">
-          <v-chip x-small :color="item.visible ? 'green' : 'grey'" dark label>
-            {{ item.visible ? '게시중' : '비공개' }}
-          </v-chip>
-        </template>
+            <template v-slot:item.status="{ item }">
+              <v-chip x-small :color="item.visible ? 'green' : 'grey'" dark label>
+                {{ item.visible ? '게시중' : '비공개' }}
+              </v-chip>
+            </template>
 
-        <template v-slot:no-data>
-          <v-sheet class="text-center pa-8 grey--text">
-            <v-icon large class="mb-2">mdi-text-box-search-outline</v-icon>
-            조건에 맞는 공지사항이 없습니다.
-          </v-sheet>
-        </template>
-      </v-data-table>
-    </v-card>
+            <template v-slot:no-data>
+              <v-sheet class="text-center pa-8 grey--text">
+                <v-icon large class="mb-2">mdi-text-box-search-outline</v-icon>
+                조건에 맞는 공지사항이 없습니다.
+              </v-sheet>
+            </template>
+          </v-data-table-->
+        </v-card>
 
     <!-- 우측 상세 패널 -->
     <v-navigation-drawer
@@ -329,8 +334,9 @@ export default {
 </script>
 
 <style scoped>
-#notifyTable {
-  
+#notiTable th, td {
+  font-size: 0.8rem;
+  padding: 4px;
 }
 .notice-table ::v-deep .v-data-table__wrapper {
   max-height: 60vh; /* 스크롤 고정 높이 */

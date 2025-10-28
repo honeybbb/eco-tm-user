@@ -1,0 +1,8 @@
+.mobile-wrap {
+  max-width: 480px;  /* 모바일 프레임 느낌 */
+  margin: 0 auto;
+  padding-bottom: 68px; /* bottom nav 공간 */
+}
+.summary-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
