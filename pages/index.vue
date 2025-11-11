@@ -74,13 +74,18 @@
           locale="ko-KR"
         ></v-date-picker>
 
+      </v-card-text>
+    </v-card>
+
+    <v-dialog v-model="dialog">
+      <v-card class="pa-4" color="#fff">
         <!-- 근무시간 입력/표시 -->
         <div class="d-flex align-center justify-space-between mt-5 mb-1">
           <div class="subtitle-2 grey--text">근무시간</div>
           <div class="caption grey--text">{{ workedHours }}시간 / {{ targetHours }}시간</div>
         </div>
 
-        <!--v-list dense class="rounded-lg py-0 time-list">
+        <v-list dense class="rounded-lg py-0 time-list">
           <v-list-item class="px-0">
             <v-list-item-avatar tile>
               <v-chip x-small color="green lighten-5" text-color="green darken-2">출근</v-chip>
@@ -134,7 +139,7 @@
               />
             </v-list-item-content>
           </v-list-item>
-        </v-list-->
+        </v-list>
 
         <!-- 등록 버튼 -->
         <!--v-btn
@@ -144,8 +149,8 @@
         >
           근무 등록
         </v-btn-->
-      </v-card-text>
-    </v-card>
+      </v-card>
+    </v-dialog>
 
 
 
@@ -176,6 +181,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 export default {
   name: 'AttendanceMobile',
   data: () => ({
@@ -195,7 +201,6 @@ export default {
 
     // 데모: 이벤트 날짜(달력 점)
     eventDates: [],
-
     timePicker: {
       show: false,
       key: null,
@@ -203,6 +208,7 @@ export default {
       hh: '09',
       mm: '00',
     },
+    dialog: false,
   }),
   computed: {
     headerDate () {
@@ -231,22 +237,119 @@ export default {
       const d = new Date(base.getFullYear(), base.getMonth(), n+1)
       return d.toISOString().substr(0,10)
     })
+
+    this.getWorkFl();
   },
   methods: {
+    getWorkFl() {
+      this.isWorking = true;
+      //내 정보 확인 후 출근여부 확인
+      // const mIdx = this.$store.state.auth?.memberId || 0;
+      const mIdx = 1;
+      if (!mIdx) {
+        console.warn('회원 식별자가 없습니다.');
+        this.isWorking = false;
+        return;
+      }
+
+      axios
+        .get(`http://localhost:3001/v1/member/data/${mIdx}`, { timeout: 8000 })
+        .then((res) => {
+          const result = res?.data?.data;
+          if (!result || result.length === 0) {
+            console.warn("회원 데이터가 없습니다.");
+            return;
+          }
+
+          const sIdx = result.sIdx || result[0]?.sIdx;
+          if (!sIdx) {
+            console.warn("현장 정보(sIdx)가 없습니다.");
+            return;
+          }
+
+          // 출근여부 확인
+          return axios.get(`http://localhost:3001/v1/work/${mIdx}`, {
+            params: { sIdx },
+            timeout: 8000,
+          });
+        })
+        .then((res) => {
+          if (!res) return; // 이전 then에서 에러나 조기 종료된 경우
+          const workData = res?.data?.data;
+          console.log("출근여부 확인 결과:", workData);
+          if(workData.length == 0) this.isWorking = false;
+        })
+        .catch((err) => {
+          console.error("getWorkFl() 실패:", err);
+        });
+    },
     onPickDate (val) {
       // 날짜 변경 시, 데모로 값만 유지
       this.selectedDate = val
+      this.dialog = true
     },
-    toggleCheck () {
+    toggleCheck() {
+      const mIdx = 1;
+      const sIdx = 1;
+      let params = new URLSearchParams();
+      params.append('mIdx', mIdx)
+      params.append('sIdx', sIdx)
+      //출근 로직
+      if(this.isWorking) {
+        console.log('퇴근하기')
+        axios.put('http://localhost:3001/v1/work/end', params)
+          .then(res => {
+            console.log(res.data)
+            alert("퇴근이 처리되었습니다.")
+          })
+      }else {
+        console.log('출근하기')
+
+        axios.post('http://localhost:3001/v1/work/start', params)
+          .then(res => {
+            console.log(res.data)
+            alert("출근이 처리되었습니다.")
+          })
+      }
+
+    },
+    toggleCheck1 () {
       if(this.isWorking) confirm("퇴근하시겠습니까?")
       this.isWorking = !this.isWorking
       if (this.isWorking && !this.form.checkIn) {
         const now = new Date()
         this.form.checkIn = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
+
       }
       if (!this.isWorking && !this.form.checkOut) {
         const now = new Date()
         this.form.checkOut = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
+      }
+
+      console.log(this.form)
+
+      //출근등록
+      let params = new URLSearchParams();
+      params.append('mIdx', this.mIdx);
+      params.append('sIdx', this.sIdx);
+      if (!this.isWorking) {
+        // 퇴근등록
+        axios.put('http://localhost:3000/v1/work/end', params)
+          .then(res => {
+            console.log('퇴근 등록 결과:', res.data.result);
+          })
+          .catch(err => {
+            console.error('퇴근등록 오류:', err);
+          });
+      } else {
+        // 출근등록
+        axios.post('http://localhost:3000/v1/work/start', params)
+          .then(res => {
+            console.log('출근 등록 결과:', res.data.result);
+          })
+          .catch(err => {
+            console.error('출근등록 오류:', err);
+          });
       }
     },
     pick (key) {

@@ -100,6 +100,8 @@
 
 <script>
 
+import axios from "axios";
+
 export default {
   name: 'Login',
   data () {
@@ -111,7 +113,7 @@ export default {
       form: {
         id: '',
         password: '',
-        remember: false
+        // remember: false
       },
       rules: {
         required: v => !!v || '필수 입력입니다.'
@@ -132,31 +134,22 @@ export default {
       this.errorMsg = ''
       if (!this.$refs.form.validate()) return
       this.loading = true
-      return;
+      let params = new URLSearchParams();
+      params.append('id', this.form.id)
+      params.append('password', this.form.password)
+
       try {
-        // 실제 API 엔드포인트로 교체하세요.
-        // 예: /api/auth/login (Node/Spring 등 백엔드 공용)
-        const { data } = await axios.post('/api/auth/login', {
-          id: this.form.id,
-          password: this.form.password
-        })
+        await axios.post('http://localhost:3001/v1/member/auth', params)
+          .then(res => {
+            console.log(res.data)
+            // localStorage.setItem('egtm_token', data.token)
+            localStorage.setItem('user', JSON.stringify(res.data.data || {}))
 
-        // 토큰/유저정보 저장 예시
-        // data = { token, user: { name, role ... } }
-        localStorage.setItem('egtm_token', data.token)
-        localStorage.setItem('egtm_user', JSON.stringify(data.user || {}))
-
-        // 아이디 기억(자동 로그인 체크 시)
-        if (this.form.remember) {
-          localStorage.setItem('egtm_login_id', this.form.id)
-        } else {
-          localStorage.removeItem('egtm_login_id')
-        }
-
-        // 로그인 후 이동
-        this.$router.replace({ path: '/' })
+            // 로그인 후 이동
+            this.$router.push('/')
+          })
       } catch (err) {
-        this.errorMsg = (err.response && err.response.data && err.response.data.message) ||
+        this.errorMsg = (err.response && err.response.data && err.response.data.msg) ||
           '로그인에 실패했습니다. 아이디/비밀번호를 확인하세요.'
       } finally {
         this.loading = false
