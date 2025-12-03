@@ -1,158 +1,74 @@
-<!-- src/views/Login.vue -->
 <template>
-  <v-container fluid class="login-wrap fill-height">
-    <v-row no-gutters align="center" justify="center">
-      <v-col cols="12" sm="8" md="5" lg="4">
-        <v-card class="elevation-2">
-          <v-card-title class="justify-center">
-            <div class="text-center">
-              <div class="mb-1 font-weight-bold">에코그린TM</div>
-              <div class="subtitle-2 grey--text">사내 ERP 로그인</div>
-            </div>
-          </v-card-title>
-
-          <v-card-text>
-            <v-alert
-              v-if="errorMsg"
-              dense
-              type="error"
-              text
-              class="mb-4"
-            >
-              {{ errorMsg }}
-            </v-alert>
-
-            <v-form ref="form" v-model="valid" @submit.prevent="onSubmit">
-              <v-text-field
-                v-model.trim="form.id"
-                label="아이디 또는 사번"
-                prepend-inner-icon="mdi-account"
-                outlined
-                dense
-                :rules="[rules.required]"
-                autocomplete="username"
-              />
-
-              <v-text-field
-                v-model="form.password"
-                :type="showPw ? 'text' : 'password'"
-                label="비밀번호"
-                prepend-inner-icon="mdi-lock"
-                :append-icon="showPw ? 'mdi-eye-off' : 'mdi-eye'"
-                @click:append="showPw = !showPw"
-                outlined
-                dense
-                :rules="[rules.required]"
-                autocomplete="current-password"
-              />
-
-              <div class="d-flex align-center justify-space-between">
-                <v-checkbox
-                  v-model="form.remember"
-                  hide-details
-                  dense
-                  label="자동 로그인"
-                />
-                <v-btn text small color="primary" @click="$router.push('/forgot')">
-                  비밀번호 찾기
-                </v-btn>
-              </div>
-
-              <v-btn
-                color="primary"
-                large
-                depressed
-                block
-                class="mt-2"
-                :loading="loading"
-                :disabled="!valid || loading"
-                @click="onSubmit"
-              >
-                로그인
-              </v-btn>
-
-              <!-- 선택: 회원가입 버튼이 필요하면 노출 -->
-              <!--
-              <v-btn
-                text
-                block
-                class="mt-2"
-                @click="$router.push('/signup')"
-              >
-                회원가입
-              </v-btn>
-              -->
-            </v-form>
-          </v-card-text>
-
-          <v-divider></v-divider>
-
-          <v-card-actions class="justify-center py-4">
-            <span class="caption grey--text">
-              © {{ new Date().getFullYear() }} EcoGreen TM
-            </span>
-          </v-card-actions>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+  <div class="login-container">
+    <h2>🔑 에코그린티엠 직원 로그인</h2>
+    <form @submit.prevent="handleLogin">
+      <input
+        type="text"
+        v-model="form.username"
+        placeholder="사번 또는 ID"
+        required
+      />
+      <input
+        type="password"
+        v-model="form.password"
+        placeholder="비밀번호"
+        required
+      />
+      <button type="submit" :disabled="isLoading">
+        {{ isLoading ? '로그인 중...' : '로그인' }}
+      </button>
+      <p class="error-message" v-if="error">{{ error }}</p>
+    </form>
+  </div>
 </template>
 
 <script>
-
-import axios from "axios";
+import axios from 'axios'
 
 export default {
-  name: 'Login',
+  name: 'LoginPage',
+  middleware: ['guest-only','auth'],
+
   data () {
     return {
-      valid: false,
-      loading: false,
-      errorMsg: '',
-      showPw: false,
       form: {
-        id: '',
-        password: '',
-        // remember: false
+        username: '',
+        password: ''
       },
-      rules: {
-        required: v => !!v || '필수 입력입니다.'
-      }
+      isLoading: false,
+      error: null
     }
   },
-  created () {
-    // 자동 로그인(로컬 스토리지 기억) 처리
-    const saved = false;
-    //const saved = localStorage.getItem('egtm_login_id')
-    if (saved) {
-      this.form.id = saved
-      this.form.remember = true
-    }
-  },
+
   methods: {
-    async onSubmit () {
-      this.errorMsg = ''
-      if (!this.$refs.form.validate()) return
-      this.loading = true
-      let params = new URLSearchParams();
-      params.append('id', this.form.id)
-      params.append('password', this.form.password)
+    async handleLogin () {
+      this.error = null
+      this.isLoading = true
 
       try {
-        await axios.post('http://localhost:3001/v1/member/auth', params)
-          .then(res => {
-            console.log(res.data)
-            // localStorage.setItem('egtm_token', data.token)
-            localStorage.setItem('user', JSON.stringify(res.data.data || {}))
+        const response = await axios.post('http://localhost:3001/v1/member/auth', {
+          id: this.form.username,
+          password: this.form.password
+        })
 
-            // 로그인 후 이동
-            this.$router.push('/')
-          })
+        // 여기서 토큰/유저정보 저장
+        const token = response.data && response.data.data
+
+        if (process.client) {
+          localStorage.setItem('user_token', token)
+        }
+
+        // 로그인 후 메인(또는 원하는 페이지)으로 이동
+        this.$router.push('/')
+
       } catch (err) {
-        this.errorMsg = (err.response && err.response.data && err.response.data.msg) ||
-          '로그인에 실패했습니다. 아이디/비밀번호를 확인하세요.'
+        console.error('Login Failed:', err)
+        this.error = '로그인 실패: 사번 또는 비밀번호를 확인해주세요.'
+        // 임시 로그인 처리 넣고 싶으면 여기에서 localStorage/set, 라우터 이동 등 추가
+        // if (process.client) localStorage.setItem('user_token', 'temp_token')
+        // this.$router.push('/')
       } finally {
-        this.loading = false
+        this.isLoading = false
       }
     }
   }
@@ -160,11 +76,8 @@ export default {
 </script>
 
 <style scoped>
-.login-wrap {
-  //background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
-  min-height: 100vh;
-}
-.v-card {
-  border-radius: 14px;
-}
+.login-container { padding: 40px 20px; text-align: center; max-width: 400px; margin: auto; }
+input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+button { width: 100%; padding: 15px; margin-top: 20px; background-color: #007bff; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+.error-message { color: red; margin-top: 10px; }
 </style>

@@ -179,6 +179,8 @@
 
 <script>
 // 필요 시 this.$axios 사용. 여기선 데모 데이터로 구성
+import axios from "axios";
+
 export default {
   name: 'MyPage',
   data: () => ({
@@ -202,33 +204,67 @@ export default {
     }
   }),
   created () {
-    this.fetchMe()
+    this.getMyData()
   },
   methods: {
-    async fetchMe () {
+    async getMyData () {
       try {
+        const mIdx = 1; // 임시값
         // const { data } = await this.$axios.get('/api/v1/me')
         // this.profile = data
-        // 데모 더미
-        this.profile = {
-          name: '정계자',
-          userId: 'jung',
-          birthDate: '1970-03-11',
-          phone: '010-5205-9596',
-          gender: '여',
-          position: '반장',
-          address: '경기도 양주시 고읍남로39번길 84, 310동 1201호',
-          note: '근무성실',
-          contractUrl: '/files/contract_1234.pdf',
-          guaranteeUrl: '/files/guarantee_1234.pdf',
-          bank: '새마을',
-          account: '9002-1340-9482-0',
-          hireDate: '2020-06-04',
-          sites: [
-            { name: 'LH 옥정 8단지', address: '양주시 옥정동로 258', active: true },
-            { name: '강서대림경동', address: '서울 강서구 허준로 121', active: false }
-          ]
-        }
+        axios.get('http://localhost:3001/v1/member/data/'+mIdx)
+          .then(res => {
+            let result = res.data.data[0]
+            console.log(JSON.parse(result.sites));
+            // 데모 더미
+            this.profile = {
+              name: result.name,
+              userId: result.id,
+              birthDate: result.birthDate,
+              phone: result.phone,
+              gender: result.gender,
+              position: result.position,
+              address: result.addr,
+              bigo: result.bigo,
+              contractUrl: result.filePath, //계약서
+              guaranteeUrl: '/files/guarantee_1234.pdf', //신원보증
+              contractDt: result.startDt,
+              expiredDt: result.endDt,
+              bank: result.bank,
+              account: result.account,
+              inDate: result.inDate, //입사일
+              outDate: result.outDate, //퇴사일
+              sites: JSON.parse(result.sites),
+              // hireDate: '2020-06-04',
+              // sites: [
+              //   { name: 'LH 옥정 8단지', address: '양주시 옥정동로 258', active: true },
+              //   { name: '강서대림경동', address: '서울 강서구 허준로 121', active: false }
+              // ]
+            }
+            /*
+            this.profile = {
+              name: '정계자',
+              userId: 'jung',
+              birthDate: '1970-03-11',
+              phone: '010-5205-9596',
+              gender: '여',
+              position: '반장',
+              address: '경기도 양주시 고읍남로39번길 84, 310동 1201호',
+              note: '근무성실',
+              contractUrl: '/files/contract_1234.pdf',
+              guaranteeUrl: '/files/guarantee_1234.pdf',
+              bank: '새마을',
+              account: '9002-1340-9482-0',
+              hireDate: '2020-06-04',
+              sites: [
+                { name: 'LH 옥정 8단지', address: '양주시 옥정동로 258', active: true },
+                { name: '강서대림경동', address: '서울 강서구 허준로 121', active: false }
+              ]
+            }
+
+             */
+          })
+
       } finally {
         this.loading = false
       }

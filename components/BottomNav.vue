@@ -17,8 +17,8 @@
       <span>근태</span>
       <v-icon>mdi-calendar-check</v-icon>
     </v-btn>
-    <v-btn text @click="$router.push('/payroll')">
-      <span>급여</span>
+    <v-btn text>
+      <span>근로계약서</span>
       <v-icon>mdi-cash-multiple</v-icon>
     </v-btn>
     <v-btn text @click="$router.push('/more')">
