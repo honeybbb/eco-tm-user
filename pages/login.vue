@@ -42,6 +42,7 @@ export default {
 
   methods: {
     async handleLogin () {
+      this.$router.push('/')
       this.error = null
       this.isLoading = true
 
