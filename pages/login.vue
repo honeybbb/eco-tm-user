@@ -46,6 +46,7 @@ export default {
       this.isLoading = true
 
       try {
+        /*
         const response = await axios.post('http://localhost:3001/v1/member/auth', {
           id: this.form.username,
           password: this.form.password
@@ -57,6 +58,8 @@ export default {
         if (process.client) {
           localStorage.setItem('user_token', token)
         }
+
+         */
 
         // 로그인 후 메인(또는 원하는 페이지)으로 이동
         this.$router.push('/')
